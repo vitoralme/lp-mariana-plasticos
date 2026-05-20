@@ -1,23 +1,24 @@
-import React, { useState } from 'react';
-import { motion } from "motion/react";
+import React, { useState, useRef, useEffect } from 'react';
+import { motion, useScroll, useTransform, AnimatePresence, useMotionValue, useInView, animate } from "motion/react";
 import {
   Menu, X, ArrowRight, Play, Star, ChevronDown, ChevronUp,
   MapPin, Phone, Mail, Building2, HardHat, Wrench, Paintbrush,
   Truck, DollarSign, ShieldCheck, Award, CheckCircle2, Check,
-  Facebook, Twitter, Linkedin, Instagram, Youtube, TrendingUp, Quote, Home, Hammer, Clock, ClipboardCheck, Shield
+  Facebook, Twitter, Linkedin, Instagram, Youtube, TrendingUp, Quote, Home, Hammer, Clock, ClipboardCheck, Shield, ArrowUpRight, ArrowDownRight,
+  Maximize2
 } from 'lucide-react';
 
 const Logo = ({ dark = false }: { dark?: boolean }) => (
   <div className="flex items-center gap-2">
-    <div className="relative flex items-center justify-center w-8 h-8 rounded" style={{ backgroundColor: '#e6c615' }}>
+    <div className="relative flex items-center justify-center w-8 h-8 rounded bg-primary">
       <div className="flex gap-[2px]">
         <div className="w-1.5 h-4 bg-white transform -skew-x-[20deg]" />
         <div className="w-1.5 h-5 bg-white transform -skew-x-[20deg]" />
         <div className="w-1.5 h-6 bg-white transform -skew-x-[20deg]" />
       </div>
     </div>
-    <span className={`text-2xl font-bold tracking-tight ${dark ? 'text-[#1F2C35]' : 'text-white'}`}>
-      Build<span className={dark ? "text-[#1F2C35]" : "text-white"}>max</span>
+    <span className={`text-2xl font-bold tracking-tight ${dark ? 'text-charcoal' : 'text-white'}`}>
+      Anísio <span className={dark ? "text-charcoal" : "text-white"}>Horta</span>
     </span>
   </div>
 );
@@ -28,23 +29,42 @@ const WhatsAppIcon = ({ className }: { className?: string }) => (
   </svg>
 );
 
+const Counter = ({ to }: { to: number }) => {
+  const count = useMotionValue(0);
+  const rounded = useTransform(count, (latest) => Math.round(latest));
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: true, margin: "-100px" });
+
+  useEffect(() => {
+    if (isInView) {
+      animate(count, to, { duration: 2, ease: "easeOut" });
+    }
+  }, [isInView, to, count]);
+
+  return <motion.span ref={ref}>{rounded}</motion.span>;
+};
+
 export default function App() {
-  const whatsappLink = "https://wa.me/5531998828383?text=Ol%C3%A1,%20estou%20vindo%20do%20site%20e%20gostaria%20de%20solicitar%20um%20or%C3%A7amento";
+  const whatsappLink = "https://wa.me/5531998828383?text=Ol%C3%A1%2C%20estou%20vindo%20do%20site%20da%20plasticos%20mariana%20e%20gostaria%20de%20solcitar%20um%20or%C3%A7amento";
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [openFaqs, setOpenFaqs] = useState<number[]>([0, 5]);
+  const [openFaq, setOpenFaq] = useState<number | null>(0);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [selectedTab, setSelectedTab] = useState("modelo-1");
+  const heroRef = useRef(null);
+  const { scrollYProgress } = useScroll({
+    target: heroRef,
+    offset: ["start start", "end start"]
+  });
+  const y = useTransform(scrollYProgress, [0, 1], ["0%", "20%"]);
 
   const toggleFaq = (index: number) => {
-    setOpenFaqs((prev) =>
-      prev.includes(index)
-        ? prev.filter((i) => i !== index)
-        : [...prev, index]
-    );
+    setOpenFaq((prev) => (prev === index ? null : index));
   };
 
   const faqsLeft = [
     { q: "Quais tamanhos de cubetas vocês fabricam?", a: "Nós produzimos todos os tamanhos e dimensões disponíveis no mercado atual. Nossa grade atende rigorosamente aos padrões técnicos utilizados pelas maiores construtoras, garantindo compatibilidade total com o seu projeto de laje nervurada." },
     { q: "Vocês trabalham apenas com venda ou também com locação?", a: "Oferecemos as duas modalidades para todo o brasil. A locação é ideal para obras pontuais com foco em baixo investimento inicial, enquanto a venda atende construtoras que utilizam o sistema nervurado de forma recorrente em seus empreendimentos." },
-    { q: "Onde a fábrica está localizada e como funciona a logística?", a: "Nossa unidade fabril está estrategicamente instalada na região de bauru, no interior de são paulo. Essa localização nos permite despachar pedidos com agilidade para todos os estados brasileiros, utilizando transportadoras parceiras ou frota própria dependendo da demanda." },
+    { q: "Onde a fábrica está localizada e como funciona a logística?", a: "Nossa unidade fabril está estrategicamente instalada em Jacuba, no município de Arealva - SP. Essa localização privilegiada nos permite despachar pedidos com agilidade para todo o Brasil, garantindo prazos competitivos tanto para venda quanto para locação." },
     { q: "As cubetas plásticas são resistentes a quantos ciclos de uso?", a: "Utilizamos polímeros de alta resistência em nossa fabricação. Com o manuseio e desforma corretos, nossas cubetas suportam dezenas de ciclos de concretagem, mantendo a integridade geométrica e o acabamento liso da laje." },
     { q: "Qual a principal vantagem da laje nervurada em relação à laje maciça?", a: "A principal vantagem é a economia real de materiais. O uso de nossas cubetas reduz o consumo de concreto e aço em até 30%, além de permitir a execução de vãos maiores com menos pilares e maior leveza estrutural." }
   ];
@@ -56,18 +76,20 @@ export default function App() {
     { q: "Qual o prazo médio de entrega para pedidos de venda?", a: "Por sermos fabricantes, mantemos um estoque regulador constante. Para modelos padrão, o carregamento é imediato após a confirmação do pedido, variando apenas o tempo de transporte até a sua localidade." },
     { q: "É necessário usar desmoldante nas cubetas plásticas?", a: "Recomendamos o uso de um desmoldante adequado para plástico para facilitar a retirada das peças e garantir que o acabamento do concreto fique perfeitamente liso, aumentando também a vida útil do equipamento." }
   ];
+  const allFaqs = [...faqsLeft, ...faqsRight];
 
   return (
-    <div className="min-h-screen font-sans text-gray-800 bg-[#E5E7EB] p-[16px] text-[16px]">
+    <div className="min-h-screen font-sans text-gray-800 bg-surface p-[16px] text-[16px]">
       <div className="w-full flex flex-col gap-[16px]">
 
         {/* Hero Section */}
-        <section className="relative py-20 md:pt-32 md:pb-20 lg:min-h-[92vh] flex items-end bg-[#1A2128] rounded-2xl overflow-hidden shadow-sm">
+        <section ref={heroRef} className="relative py-20 md:pt-32 md:pb-20 lg:min-h-[92vh] flex items-end bg-charcoal rounded-2xl overflow-hidden shadow-sm">
           <div className="absolute inset-0 z-0">
-            <img
+            <motion.img
+              style={{ y }}
               src="imagens/bg-anisio.jpg"
               alt="Construction background"
-              className="w-full h-full object-cover"
+              className="w-full h-[120%] object-cover absolute top-0 left-0"
               width="1920"
               height="1080"
               fetchpriority="high"
@@ -79,8 +101,8 @@ export default function App() {
 
           <div className="w-full max-w-[1240px] mx-auto px-6 relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-12 items-end">
             <div className="lg:col-span-8">
-              <div className="mb-8 inline-block overflow-hidden rounded-xl shadow-2xl border-2 border-white/10 backdrop-blur-sm">
-                <img src="imagens/logo-fundo.jpg" alt="Logo Anísio Horta" className="w-[260px] h-auto block" width="260" height="75" decoding="async" />
+              <div>
+                <img src="imagens/logo-fundo.jpg" alt="Logo Anísio Horta" className="w-48 md:w-64 h-auto block rounded-xl shadow-lg" width="260" height="75" decoding="async" />
               </div>
 
               <h1 className="font-heading text-[42px] font-bold text-white leading-[1.1] mb-6">
@@ -89,14 +111,14 @@ export default function App() {
             </div>
 
             <div className="lg:col-span-4 flex flex-col items-start lg:items-end lg:text-right">
-              <div className="max-w-xs text-white/80 mb-8 border-l-2 lg:border-l-0 lg:border-r-2 border-[#e6c615] pl-4 lg:pl-0 lg:pr-4 text-left lg:text-right">
+              <div className="max-w-xs text-white/80 mb-8 border-l-2 lg:border-l-0 lg:border-r-2 border-primary pl-4 lg:pl-0 lg:pr-4 text-left lg:text-right">
                 Reduza o desperdício de materiais em sua construção usando fôrmas plásticas de alta qualidade com os melhores prazos do mercado.
               </div>
               <a
                 href={whatsappLink}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="bg-[#e6c615] hover:bg-[#D4B81A] text-[#1A2128] px-8 py-4 rounded font-medium flex items-center gap-2 transition-colors cursor-pointer"
+                className="bg-accent-blue hover:bg-accent-blue-dark text-white px-8 py-4 rounded-full font-medium flex items-center gap-2 transition-colors cursor-pointer"
               >
                 Solicitar Orçamento <ArrowRight className="w-5 h-5" aria-hidden="true" />
               </a>
@@ -109,19 +131,19 @@ export default function App() {
           <div className="w-full max-w-[1240px] mx-auto px-6">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8 divide-x divide-gray-100">
               <motion.div initial={{ opacity: 0, scale: 0.8 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ delay: 0.1 }} className="text-center px-4">
-                <div className="font-heading text-[36px] font-bold text-gray-900 mb-2">5<span className="text-[#e6c615]">+</span></div>
+                <div className="font-heading text-[36px] font-bold text-gray-900 mb-2"><Counter to={5} /><span className="text-primary">+</span></div>
                 <div className="font-heading text-[15px] text-gray-500 font-medium">Anos de experiência</div>
               </motion.div>
               <motion.div initial={{ opacity: 0, scale: 0.8 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ delay: 0.2 }} className="text-center px-4">
-                <div className="font-heading text-[36px] font-bold text-gray-900 mb-2">500<span className="text-[#e6c615]">+</span></div>
+                <div className="font-heading text-[36px] font-bold text-gray-900 mb-2"><Counter to={500} /><span className="text-primary">+</span></div>
                 <div className="font-heading text-[15px] text-gray-500 font-medium">Projetos atendidos</div>
               </motion.div>
               <motion.div initial={{ opacity: 0, scale: 0.8 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ delay: 0.3 }} className="text-center px-4">
-                <div className="font-heading text-[36px] font-bold text-gray-900 mb-2">150<span className="text-[#e6c615]">+</span></div>
+                <div className="font-heading text-[36px] font-bold text-gray-900 mb-2"><Counter to={150} /><span className="text-primary">+</span></div>
                 <div className="font-heading text-[15px] text-gray-500 font-medium">Obras certificadas</div>
               </motion.div>
               <motion.div initial={{ opacity: 0, scale: 0.8 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ delay: 0.4 }} className="text-center px-4">
-                <div className="font-heading text-[36px] font-bold text-gray-900 mb-2">100<span className="text-[#e6c615]">%</span></div>
+                <div className="font-heading text-[36px] font-bold text-gray-900 mb-2"><Counter to={100} /><span className="text-primary">%</span></div>
                 <div className="font-heading text-[15px] text-gray-500 font-medium">de satisfação</div>
               </motion.div>
             </div>
@@ -133,8 +155,8 @@ export default function App() {
           <div className="w-full max-w-[1240px] mx-auto px-6">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-16">
               <motion.div initial={{ opacity: 0, x: -30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }} className="lg:col-span-5">
-                <div className="flex items-center gap-2 text-[#e6c615] font-bold text-sm tracking-wider uppercase mb-6">
-                  <span className="w-8 h-px bg-[#e6c615]" /> SOBRE NÓS
+                <div className="flex items-center gap-2 text-primary font-bold text-sm tracking-wider uppercase mb-6">
+                  <span className="w-8 h-px bg-primary" /> SOBRE NÓS
                 </div>
                 <h2 className="text-gray-500 text-lg mb-8 leading-relaxed">
                   Referência nacional no mercado de construção, otimizando projetos de todos os portes.
@@ -142,18 +164,18 @@ export default function App() {
               </motion.div>
 
               <motion.div initial={{ opacity: 0, x: 30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.6, delay: 0.2 }} className="lg:col-span-7">
-                <h3 className="font-heading text-[42px] font-bold text-[#1F2C35] mb-6 leading-tight">
+                <h3 className="font-heading text-[42px] font-bold text-charcoal mb-6 leading-tight">
                   Soluções de alta performance para lajes de qualquer porte
                 </h3>
                 <div className="flex flex-col sm:flex-row gap-6 items-start sm:items-center">
                   <p className="text-gray-500 leading-relaxed max-w-xl">
-                    Localizada em Bauru-SP, nossa fábrica é especializada no desenvolvimento de Cubetas para laje Nervurada que otimizam o uso de concreto e aço. Atendemos todo o território nacional com modelos que seguem rigorosamente os padrões técnicos do mercado.
+                    Localizada em Jacuba, Arealva - SP, nossa fábrica é especializada no desenvolvimento de Cubetas para laje Nervurada que otimizam o uso de concreto e aço. Atendemos todo o território nacional com modelos que seguem rigorosamente os padrões técnicos do mercado.
                   </p>
                   <a
                     href={whatsappLink}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="whitespace-nowrap border-2 border-gray-200 hover:border-[#1F2C35] text-[#1F2C35] font-semibold px-8 py-4 rounded flex items-center gap-2 transition-colors cursor-pointer"
+                    className="whitespace-nowrap border-2 border-gray-200 hover:border-accent-blue text-accent-blue font-semibold px-8 py-4 rounded-full flex items-center gap-2 transition-colors cursor-pointer"
                   >
                     Fale Conosco <ArrowRight className="w-5 h-5" aria-hidden="true" />
                   </a>
@@ -161,14 +183,24 @@ export default function App() {
               </motion.div>
             </div>
 
-            <div className="mt-20 grid grid-cols-1 lg:grid-cols-2 gap-10">
-              <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }} className="relative rounded-2xl overflow-hidden shadow-2xl h-[500px]">
-                <img src="imagens/img3.jpg" alt="Worker" className="w-full h-full object-cover" width="667" height="500" loading="lazy" decoding="async" />
+            <div className="mt-12 md:mt-20 grid grid-cols-1 lg:grid-cols-2 gap-10">
+              <motion.div 
+                initial={{ opacity: 0, y: 30 }} 
+                whileInView={{ opacity: 1, y: 0 }} 
+                viewport={{ once: true }} 
+                transition={{ duration: 0.6 }} 
+                className="relative rounded-2xl overflow-hidden shadow-2xl h-72 md:h-[500px] cursor-zoom-in group"
+                onClick={() => setSelectedImage("imagens/img3.jpg")}
+              >
+                <img src="imagens/img3.jpg" alt="Worker" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" width="667" height="500" loading="lazy" decoding="async" />
+                <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
+                  <div className="bg-white/80 p-3 rounded-full shadow-lg"><Maximize2 className="w-6 h-6 text-primary" /></div>
+                </div>
 
               </motion.div>
 
               <div className="flex flex-col gap-6 justify-center">
-                <motion.div initial={{ opacity: 0, x: 20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.6, delay: 0.2 }} className="bg-[#334A97] p-10 rounded-2xl text-white relative overflow-hidden group hover:bg-[#1A2128] transition-colors duration-500">
+                <motion.div initial={{ opacity: 0, x: 20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.6, delay: 0.2 }} className="bg-primary p-10 rounded-2xl text-white relative overflow-hidden group hover:bg-charcoal transition-colors duration-500">
                   <div className="absolute top-0 right-0 p-8 opacity-10 transform translate-x-4 -translate-y-4 group-hover:scale-110 transition-transform duration-500">
                     <Building2 className="w-32 h-32" />
                   </div>
@@ -183,7 +215,7 @@ export default function App() {
                   </p>
                 </motion.div>
 
-                <motion.div initial={{ opacity: 0, x: 20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.6, delay: 0.4 }} className="bg-[#1A2128] p-10 rounded-2xl text-white relative overflow-hidden group hover:bg-[#334A97] transition-colors duration-500">
+                <motion.div initial={{ opacity: 0, x: 20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.6, delay: 0.4 }} className="bg-charcoal p-10 rounded-2xl text-white relative overflow-hidden group hover:bg-primary transition-colors duration-500">
                   <div className="absolute top-0 right-0 p-8 opacity-10 transform translate-x-4 -translate-y-4 group-hover:scale-110 transition-transform duration-500">
                     <Truck className="w-32 h-32" />
                   </div>
@@ -207,10 +239,10 @@ export default function App() {
           <div className="w-full max-w-[1240px] mx-auto px-6">
             <div className="flex flex-col lg:flex-row justify-between items-start mb-16 gap-8">
               <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5 }} className="max-w-2xl">
-                <div className="flex items-center gap-2 text-[#e6c615] font-bold text-sm tracking-wider uppercase mb-4">
-                  <span className="w-8 h-px bg-[#e6c615]" /> NOSSAS SOLUÇÕES
+                <div className="flex items-center gap-2 text-primary font-bold text-sm tracking-wider uppercase mb-4">
+                  <span className="w-8 h-px bg-primary" /> NOSSAS SOLUÇÕES
                 </div>
-                <h2 className="font-heading text-[42px] font-bold text-[#1F2C35] leading-tight">
+                <h2 className="font-heading text-[42px] font-bold text-charcoal leading-tight">
                   Tudo o que sua obra precisa em lajes nervuradas
                 </h2>
               </motion.div>
@@ -243,18 +275,26 @@ export default function App() {
                 <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: i * 0.15 }} key={i} className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-200 group flex flex-col">
                   <div className="p-8 pb-6 flex-grow">
                     <div className="flex items-center gap-4 mb-5">
-                      <div className="w-14 h-14 bg-[#e6c615] text-white rounded-xl flex-shrink-0 flex items-center justify-center">
+                      <div className="w-14 h-14 bg-primary text-white rounded-xl flex-shrink-0 flex items-center justify-center">
                         {React.cloneElement(srv.icon as React.ReactElement, { className: 'w-7 h-7' })}
                       </div>
-                      <h3 className="text-xl font-bold text-[#1F2C35] leading-tight">{srv.title}</h3>
+                      <h3 className="text-xl font-bold text-charcoal leading-tight">{srv.title}</h3>
                     </div>
                     <p className="text-gray-500 text-sm leading-relaxed">
                       {srv.desc}
                     </p>
                   </div>
                   <div className="p-6 pt-0">
-                    <div className="rounded-xl overflow-hidden h-52">
+                    <div 
+                      className="rounded-xl overflow-hidden h-52 relative group/img cursor-zoom-in"
+                      onClick={() => setSelectedImage(srv.img)}
+                    >
                       <img src={srv.img} alt={srv.title} className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500" width="326" height="245" loading="lazy" decoding="async" />
+                      <div className="absolute inset-0 bg-black/10 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
+                        <div className="bg-white/80 p-2 rounded-full shadow-lg transform scale-90 group-hover/img:scale-100 transition-transform">
+                          <Maximize2 className="w-5 h-5 text-primary" />
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </motion.div>
@@ -263,12 +303,104 @@ export default function App() {
           </div>
         </section>
 
+        {/* Especificações Técnicas */}
+        <section className="py-24 bg-white rounded-2xl shadow-sm">
+          <div className="w-full max-w-[1240px] mx-auto px-6">
+          <div className="flex flex-col lg:flex-row justify-between items-start mb-16 gap-8">
+            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }} className="max-w-2xl">
+              <div className="flex items-center gap-2 text-primary font-bold text-sm tracking-wider uppercase mb-4">
+                <span className="w-8 h-px bg-primary" /> ESPECIFICAÇÕES TÉCNICAS
+              </div>
+              <h2 className="font-heading text-[42px] font-bold text-charcoal leading-tight">
+                Detalhes de cada modelo
+              </h2>
+            </motion.div>
+            <motion.p initial={{ opacity: 0, x: 20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.6, delay: 0.2 }} className="text-gray-500 max-w-md pt-2">
+              Conheça as dimensões, inércia e capacidade de cada modelo de cubeta disponível para otimizar sua obra.
+              <span className="block mt-2 text-xs text-primary/70 font-medium italic">Clique na imagem para visualizar melhor as medidas</span>
+            </motion.p>
+          </div>
+
+            {/* Tab Navigation */}
+            <div className="flex flex-wrap justify-center gap-2 md:gap-3 mb-12">
+              {[
+                { id: "modelo-1", label: "600" },
+                { id: "modelo-2", label: "610" },
+                { id: "modelo-3", label: "610-B125" },
+                { id: "modelo-4", label: "650" },
+                { id: "modelo-5", label: "660" },
+                { id: "modelo-6", label: "700" },
+                { id: "modelo-7", label: "740" },
+                { id: "modelo-8", label: "800" },
+                { id: "modelo-9", label: "830" },
+                { id: "modelo-10", label: "875" },
+                { id: "modelo-11", label: "900" }
+              ].map((tab) => (
+                <motion.button
+                  key={tab.id}
+                  onClick={() => setSelectedTab(tab.id)}
+                  className={`px-4 py-2 rounded-lg font-semibold transition-all duration-300 text-sm md:text-base ${
+                    selectedTab === tab.id
+                      ? "bg-primary text-white shadow-lg"
+                      : "bg-gray-100 text-charcoal hover:bg-gray-200"
+                  }`}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  {tab.label}
+                </motion.button>
+              ))}
+            </div>
+
+            {/* Tab Content */}
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={selectedTab}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.3 }}
+                className="relative group cursor-zoom-in"
+                onClick={(e) => {
+                  const img = e.currentTarget.querySelector('img');
+                  if (img) setSelectedImage(img.getAttribute('src'));
+                }}
+              >
+                <img
+                  src={`imagens/${
+                    selectedTab === "modelo-1" ? "600.gif" :
+                    selectedTab === "modelo-2" ? "610.gif" :
+                    selectedTab === "modelo-3" ? "610-B125.webp" :
+                    selectedTab === "modelo-4" ? "650.gif" :
+                    selectedTab === "modelo-5" ? "660.gif" :
+                    selectedTab === "modelo-6" ? "700.gif" :
+                    selectedTab === "modelo-7" ? "740.gif" :
+                    selectedTab === "modelo-8" ? "800.webp" :
+                    selectedTab === "modelo-9" ? "830.webp" :
+                    selectedTab === "modelo-10" ? "875.webp" :
+                    "900.gif"
+                  }`}
+                  alt="Especificações técnicas"
+                  className="w-full max-w-4xl mx-auto h-auto object-contain px-0 md:px-4"
+                  loading="lazy"
+                  decoding="async"
+                />
+                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+                  <div className="bg-white/80 p-3 rounded-full shadow-lg backdrop-blur-sm transform scale-90 group-hover:scale-100 transition-transform duration-300">
+                    <Maximize2 className="w-6 h-6 text-primary" />
+                  </div>
+                </div>
+              </motion.div>
+            </AnimatePresence>
+          </div>
+        </section>
+
         {/* Why Choose Us */}
-        <section className="py-24 bg-[#1A2128] text-white relative rounded-2xl shadow-sm overflow-hidden">
+        <section className="py-24 bg-charcoal text-white relative rounded-2xl shadow-sm overflow-hidden">
           <div className="w-full max-w-[1240px] mx-auto px-6 relative z-10">
             <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }} className="text-center max-w-2xl mx-auto mb-16">
-              <div className="flex items-center justify-center gap-2 text-[#e6c615] font-bold text-sm tracking-wider uppercase mb-4">
-                <span className="w-8 h-px bg-[#e6c615]" /> POR QUE NOS ESCOLHER <span className="w-8 h-px bg-[#e6c615]" />
+              <div className="flex items-center justify-center gap-2 text-primary font-bold text-sm tracking-wider uppercase mb-4">
+                <span className="w-8 h-px bg-primary" /> POR QUE NOS ESCOLHER <span className="w-8 h-px bg-primary" />
               </div>
               <h2 className="font-heading text-[42px] font-bold mb-6 text-white text-balance leading-tight">
                 O que nos torna referência em lajes nervuradas
@@ -280,17 +412,17 @@ export default function App() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
               {[
-                { icon: <Clock className="w-10 h-10" />, title: "Entrega no prazo", desc: "Trabalhamos com logística ágil saindo de bauru para garantir que as cubetas cheguem ao canteiro exatamente quando você precisar." },
+                { icon: <Clock className="w-10 h-10" />, title: "Entrega no prazo", desc: "Trabalhamos com logística ágil saindo de Jacuba, Arealva - SP para garantir que as cubetas cheguem ao canteiro exatamente quando você precisar." },
                 { icon: <DollarSign className="w-10 h-10" />, title: "Preços de fábrica", desc: "Ao negociar diretamente com quem fabrica, você elimina intermediários e garante as melhores condições tanto na venda quanto na locação." },
                 { icon: <ClipboardCheck className="w-10 h-10" />, title: "Garantia de qualidade", desc: "Nossas fôrmas plásticas são produzidas com materiais de alta resistência, suportando múltiplos ciclos de concretagem com perfeição." },
                 { icon: <Shield className="w-10 h-10" />, title: "Variedade total", desc: "Disponibilizamos todos os tamanhos de cubetas do mercado para que seu projeto seja executado fielmente, sem adaptações improvisadas." }
               ].map((item, i) => (
-                <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: i * 0.1 }} key={i} className="text-left group p-8 rounded-2xl hover:bg-[#e6c615] transition-colors duration-300">
-                  <div className="text-[#e6c615] group-hover:text-white mb-6 transition-colors duration-300">
+                <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: i * 0.1 }} key={i} className="text-left group p-8 rounded-2xl bg-primary transition-colors duration-300">
+                  <div className="text-white mb-6 transition-colors duration-300">
                     {item.icon}
                   </div>
                   <h3 className="text-xl font-bold mb-4 text-white">{item.title}</h3>
-                  <p className="text-gray-400 group-hover:text-white/90 transition-colors duration-300 text-sm leading-relaxed">
+                  <p className="text-white/90 transition-colors duration-300 text-sm leading-relaxed">
                     {item.desc}
                   </p>
                 </motion.div>
@@ -302,23 +434,24 @@ export default function App() {
                 href={whatsappLink}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="bg-[#e6c615] hover:bg-[#D4B81A] text-[#1A2128] font-semibold px-8 py-4 rounded transition-colors duration-300 cursor-pointer"
+                className="bg-accent-blue hover:bg-accent-blue-dark text-white font-semibold px-8 py-4 rounded-full transition-colors duration-300 cursor-pointer flex items-center gap-2"
               >
-                Solicitar orçamento
+                Solicitar orçamento <ArrowRight className="w-5 h-5" aria-hidden="true" />
               </a>
             </div>
           </div>
         </section>
 
         {/* Projects */}
-        <section className="py-24 bg-white rounded-2xl shadow-sm">
-          <div className="w-full max-w-[1240px] mx-auto px-6">
-            <div className="flex flex-col lg:flex-row justify-between items-end mb-16 gap-8">
+        <section className="py-24 bg-white rounded-2xl shadow-sm overflow-hidden">
+          {/* Header Container - Standard Width */}
+          <div className="w-full max-w-[1240px] mx-auto px-6 mb-16">
+            <div className="flex flex-col lg:flex-row justify-between items-end gap-8">
               <motion.div initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }} className="max-w-2xl">
-                <div className="flex items-center gap-2 text-[#e6c615] font-bold text-sm tracking-wider uppercase mb-4">
-                  <span className="w-8 h-px bg-[#e6c615]" /> NOSSOS PRODUTOS EM CAMPO
+                <div className="flex items-center gap-2 text-primary font-bold text-sm tracking-wider uppercase mb-4">
+                  <span className="w-8 h-px bg-primary" /> NOSSOS PRODUTOS EM CAMPO
                 </div>
-                <h2 className="font-heading text-[42px] font-bold text-[#1F2C35] leading-tight text-balance">
+                <h2 className="font-heading text-[42px] font-bold text-charcoal leading-tight text-balance">
                   Cubetas plásticas aplicadas em projetos reais
                 </h2>
               </motion.div>
@@ -326,39 +459,89 @@ export default function App() {
                 Confira como nossas cubetas para lajes nervuradas garantem um canteiro de obras mais limpo, organizado e com um acabamento estrutural superior em cada etapa da concretagem.
               </motion.p>
             </div>
+          </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
-              <motion.div initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ duration: 0.5 }} className="group relative overflow-hidden rounded-xl aspect-[4/3]">
-                <img src="imagens/img1.jpg" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="Project 1" width="584" height="438" loading="lazy" decoding="async" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              </motion.div>
-              <motion.div initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.1 }} className="group relative overflow-hidden rounded-xl aspect-[4/3]">
-                <img src="imagens/img4.jpg" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="Project 2" width="584" height="438" loading="lazy" decoding="async" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              </motion.div>
-              <motion.div initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.2 }} className="group relative overflow-hidden rounded-xl aspect-[4/3]">
-                <img src="imagens/img3.jpg" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="Project 3" width="584" height="438" loading="lazy" decoding="async" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              </motion.div>
-              <motion.div initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.3 }} className="group relative overflow-hidden rounded-xl aspect-[4/3]">
-                <img src="imagens/img6.jpg" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="Project 4" width="584" height="438" loading="lazy" decoding="async" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              </motion.div>
+          {/* Gallery Container - Ultra Wide Width */}
+          <div className="w-full max-w-[1600px] mx-auto px-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-8 items-start">
+              {[
+                { img: "imagens/img1.jpg", offset: "xl:mt-0" },
+                { img: "imagens/img4.jpg", offset: "xl:mt-12" },
+                { img: "imagens/img3.jpg", offset: "xl:mt-4" },
+                { img: "imagens/img6.jpg", offset: "xl:mt-20" }
+              ].map((item, i) => (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.6, delay: i * 0.1 }}
+                  key={i}
+                  className={`group relative overflow-hidden rounded-2xl bg-gray-100 cursor-pointer ${item.offset}`}
+                  onClick={() => setSelectedImage(item.img)}
+                >
+                  <img
+                    src={item.img}
+                    className="w-full aspect-[3/4] object-cover transition-transform duration-700 group-hover:scale-110"
+                    alt={`Projeto ${i + 1}`}
+                    width="600"
+                    height="800"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                  <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                    <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center transform scale-50 group-hover:scale-100 transition-transform duration-300">
+                      <Maximize2 className="w-5 h-5 text-charcoal" />
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
             </div>
+
+            {/* Lightbox Modal */}
+            <AnimatePresence>
+              {selectedImage && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  onClick={() => setSelectedImage(null)}
+                  className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center p-4 md:p-12 cursor-zoom-out"
+                >
+                  <motion.div
+                    initial={{ scale: 0.9, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 0.9, opacity: 0 }}
+                    className="relative max-w-5xl w-full h-full flex items-center justify-center"
+                  >
+                    <img
+                      src={selectedImage}
+                      className="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl"
+                      alt="Projeto em destaque"
+                    />
+                    <button
+                      onClick={() => setSelectedImage(null)}
+                      className="absolute top-0 right-0 m-4 w-12 h-12 bg-white/10 hover:bg-white/20 text-white rounded-full flex items-center justify-center transition-colors"
+                    >
+                      <X className="w-6 h-6" />
+                    </button>
+                  </motion.div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </section>
 
 
 
         {/* Commitment Section */}
-        <section className="py-24 bg-[#1A2128] text-white rounded-2xl overflow-hidden shadow-sm">
+        <section className="py-24 bg-charcoal text-white rounded-2xl overflow-hidden shadow-sm">
           <div className="w-full max-w-[1240px] mx-auto px-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
 
               {/* Left Content */}
               <motion.div initial={{ opacity: 0, x: -30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }} className="flex flex-col justify-center">
-                <div className="w-72 h-20 rounded-2xl overflow-hidden mb-12">
-                  <img src="imagens/logo-fundo.jpg" className="w-full h-full object-cover" alt="Construction workers" width="288" height="80" loading="lazy" decoding="async" />
+                <div className="h-24 mb-12 flex items-center">
+                  <img src="imagens/logo-fundo.jpg" className="h-full w-auto object-contain rounded-xl" alt="Logo Plásticos Mariana" width="288" height="96" loading="lazy" decoding="async" />
                 </div>
 
                 <h2 className="font-heading text-[42px] font-bold leading-tight mb-6">
@@ -372,7 +555,7 @@ export default function App() {
                     href={whatsappLink}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="bg-[#e6c615] hover:bg-[#D4B81A] text-[#1A2128] px-8 py-4 rounded font-medium flex items-center gap-2 transition-colors inline-flex"
+                    className="bg-accent-blue hover:bg-accent-blue-dark text-white px-8 py-4 rounded-full font-medium flex items-center gap-2 transition-colors inline-flex"
                   >
                     Solicitar orçamento <ArrowRight className="w-5 h-5" aria-hidden="true" />
                   </a>
@@ -386,7 +569,7 @@ export default function App() {
                   whileInView={{ opacity: 1, x: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.6, delay: 0.2 }}
-                  className="relative w-full max-w-[400px] aspect-[9/16] rounded-[32px] overflow-hidden shadow-2xl bg-black border-8 border-[#1F2C35]"
+                  className="relative w-full max-w-[400px] aspect-[9/16] rounded-[32px] overflow-hidden shadow-2xl bg-black border-8 border-primary"
                 >
                   <iframe
                     className="absolute inset-0 w-full h-full"
@@ -394,7 +577,6 @@ export default function App() {
                     title="Anisio Horta - Cubetas"
                     frameBorder="0"
                     allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share"
-                    referrerPolicy="strict-origin-when-cross-origin"
                     allowFullScreen>
                   </iframe>
                 </motion.div>
@@ -404,94 +586,75 @@ export default function App() {
           </div>
         </section>
 
+        {/* FAQ Section */}
+        <section className="py-24 bg-surface rounded-2xl">
+          <div className="w-full max-w-[1100px] mx-auto px-6">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+              className="text-center mb-16"
+            >
+              <div className="flex items-center justify-center gap-2 text-charcoal/60 font-medium text-sm mb-4">
+                <span className="w-1 h-1 rounded-full bg-charcoal/60" /> Faqs
+              </div>
+              <h2 className="font-heading text-[56px] font-bold text-charcoal leading-tight">
+                Perguntas Frequentes
+              </h2>
+            </motion.div>
 
-
-        {/* FAQ */}
-        <section className="py-24 bg-white rounded-2xl shadow-sm">
-          <div className="w-full max-w-[1240px] mx-auto px-6">
-            <div className="flex flex-col lg:flex-row justify-between items-start mb-16 gap-8">
-              <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }} className="max-w-2xl">
-                <div className="flex items-center gap-2 text-[#e6c615] font-bold text-sm tracking-wider uppercase mb-4">
-                  <span className="w-8 h-px bg-[#e6c615]" /> FAQS
-                </div>
-                <h2 className="font-heading text-[42px] font-bold text-[#1F2C35] leading-tight">
-                  Dúvidas frequentes
-                </h2>
-              </motion.div>
-              <motion.p initial={{ opacity: 0, x: 20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.6, delay: 0.2 }} className="text-gray-500 max-w-md lg:mt-10 leading-relaxed">
-                Reunimos as principais dúvidas de engenheiros e gestores de obras para ajudar você a tomar a melhor decisão técnica. Se não encontrar a resposta que procura, nossa equipe está pronta para atender você via WhatsApp.
-              </motion.p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.2 }} className="space-y-4">
-                {faqsLeft.map((faq, i) => (
-                  <div key={i} className={`rounded-xl overflow-hidden ${openFaqs.includes(i) ? 'bg-[#1A2128]' : 'bg-[#F3F6F8]'} transition-all`}>
-                    <button
-                      className={`w-full text-left p-6 flex justify-between items-center gap-4 ${openFaqs.includes(i) ? 'text-white' : 'text-[#1F2C35]'} cursor-pointer`}
-                      onClick={() => toggleFaq(i)}
-                    >
-                      <span className="font-semibold">{faq.q}</span>
-                      {openFaqs.includes(i) ?
-                        <div className="w-8 h-8 rounded bg-[#e6c615] text-white flex items-center justify-center shrink-0">
-                          <ChevronUp className="w-5 h-5" />
-                        </div> :
-                        <div className="w-8 h-8 rounded bg-white border border-gray-100 text-gray-400 flex items-center justify-center shrink-0">
-                          <ChevronDown className="w-5 h-5" />
-                        </div>
-                      }
-                    </button>
-                    {openFaqs.includes(i) && (
-                      <div className="p-6 pt-0 bg-[#1A2128] text-white/80 text-sm leading-relaxed border-t border-gray-700 mt-2">
-                        <div className="pt-4">{faq.a}</div>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </motion.div>
-              <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.4 }} className="space-y-4">
-                {faqsRight.map((faq, i) => {
-                  const index = i + faqsLeft.length;
-                  return (
-                    <div key={index} className={`rounded-xl overflow-hidden ${openFaqs.includes(index) ? 'bg-[#1A2128]' : 'bg-[#F3F6F8]'} transition-all`}>
-                      <button
-                        className={`w-full text-left p-6 flex justify-between items-center gap-4 ${openFaqs.includes(index) ? 'text-white' : 'text-[#1F2C35]'} cursor-pointer`}
-                        onClick={() => toggleFaq(index)}
-                      >
-                        <span className="font-semibold">{faq.q}</span>
-                        {openFaqs.includes(index) ?
-                          <div className="w-8 h-8 rounded bg-[#e6c615] text-white flex items-center justify-center shrink-0">
-                            <ChevronUp className="w-5 h-5" />
-                          </div> :
-                          <div className="w-8 h-8 rounded bg-white border border-gray-100 text-gray-400 flex items-center justify-center shrink-0">
-                            <ChevronDown className="w-5 h-5" />
-                          </div>
-                        }
-                      </button>
-                      {openFaqs.includes(index) && (
-                        <div className="p-6 pt-0 bg-[#1A2128] text-white/80 text-sm leading-relaxed border-t border-gray-700 mt-2">
-                          <div className="pt-4">{faq.a}</div>
-                        </div>
+            <div className="space-y-4">
+              {allFaqs.map((faq, i) => (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5, delay: i * 0.05 }}
+                  key={i}
+                  className="bg-white rounded-2xl overflow-hidden shadow-sm"
+                >
+                  <button
+                    className="w-full text-left p-8 flex justify-between items-center gap-6 cursor-pointer"
+                    onClick={() => toggleFaq(i)}
+                  >
+                    <span className="text-xl font-bold text-charcoal">{faq.q}</span>
+                    <div className="shrink-0">
+                      {openFaq === i ? (
+                        <ArrowDownRight className="w-6 h-6 text-charcoal/40" />
+                      ) : (
+                        <ArrowUpRight className="w-6 h-6 text-charcoal/40" />
                       )}
                     </div>
-                  )
-                })}
-              </motion.div>
+                  </button>
+                  {openFaq === i && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      className="px-8 pb-8"
+                    >
+                      <div className="pt-4 border-t border-gray-50 text-gray-500 leading-relaxed max-w-2xl">
+                        {faq.a}
+                      </div>
+                    </motion.div>
+                  )}
+                </motion.div>
+              ))}
             </div>
           </div>
         </section>
 
         {/* Footer */}
-        <footer className="bg-[#1A2128] text-white pt-20 pb-10 rounded-2xl overflow-hidden shadow-sm">
+        <footer className="bg-charcoal text-white pt-20 pb-10 rounded-2xl overflow-hidden shadow-sm">
           <div className="w-full max-w-[1240px] mx-auto px-6">
             <motion.div initial={{ opacity: 0, scale: 0.9 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ duration: 0.5 }} className="flex justify-center mb-16">
-              <img src="imagens/logo-fundo.jpg" alt="Logo" width={200} height={200} className="rounded-xl" loading="lazy" decoding="async" />
+              <img src="imagens/logo-fundo.jpg" alt="Logo Plásticos Mariana" width={280} height={100} className="h-24 w-auto rounded-xl shadow-sm" loading="lazy" decoding="async" />
             </motion.div>
 
             <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.1 }} className="flex flex-col items-center mb-12">
               <div className="flex items-center gap-2 text-gray-400 mb-2">
-                <MapPin className="w-5 h-5 text-[#e6c615]" aria-hidden="true" />
-                <span className="text-sm">Rodovia Cezário José de Castilho (SP-321), Km 361 Arealva - SP</span>
+                <MapPin className="w-5 h-5 text-primary" aria-hidden="true" />
+                <span className="text-sm">Jacuba, Arealva - SP, 17169-899</span>
               </div>
             </motion.div>
 
@@ -500,8 +663,8 @@ export default function App() {
                 © 2026 — Todos os direitos reservados.
               </p>
               <div className="flex items-center gap-4 text-gray-400">
-                <a href="#" className="hover:text-white transition-colors cursor-pointer" aria-label="Siga-nos no Instagram">
-                  <Instagram className="w-5 h-5" aria-hidden="true" />
+                <a href="https://www.facebook.com/profile.php?id=61577494170412&locale=pt_BR" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors cursor-pointer" aria-label="Siga-nos no Facebook">
+                  <Facebook className="w-5 h-5" aria-hidden="true" />
                 </a>
               </div>
             </motion.div>

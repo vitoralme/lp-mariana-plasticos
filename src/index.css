@@ -3,4 +3,11 @@
 @theme {
   --font-sans: "Lato", ui-sans-serif, system-ui, sans-serif;
   --font-heading: "Instrument Sans", ui-sans-serif, system-ui, sans-serif;
+
+  --color-primary: #1C7F3E;
+  --color-primary-dark: #15612f;
+  --color-accent-blue: #097CBA;
+  --color-accent-blue-dark: #075e8c;
+  --color-charcoal: #131313;
+  --color-surface: #F3F6F8;
 }
