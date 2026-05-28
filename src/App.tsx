@@ -50,6 +50,7 @@ export default function App() {
   const [openFaq, setOpenFaq] = useState<number | null>(0);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [selectedTab, setSelectedTab] = useState("modelo-1");
+  const [direction, setDirection] = useState<"bidirecional" | "unidirecional">("bidirecional");
   const heroRef = useRef(null);
   const { scrollYProgress } = useScroll({
     target: heroRef,
@@ -321,9 +322,39 @@ export default function App() {
             </motion.p>
           </div>
 
+            {/* Direction Navigation */}
+            <div className="flex justify-center gap-4 mb-8">
+              <button
+                onClick={() => {
+                  setDirection("bidirecional");
+                  setSelectedTab("modelo-1");
+                }}
+                className={`px-6 py-3 rounded-xl font-bold cursor-pointer transition-all duration-300 ${
+                  direction === "bidirecional"
+                    ? "bg-primary text-white shadow-lg"
+                    : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+                }`}
+              >
+                Bidirecionais
+              </button>
+              <button
+                onClick={() => {
+                  setDirection("unidirecional");
+                  setSelectedTab("modelo-u1");
+                }}
+                className={`px-6 py-3 rounded-xl font-bold cursor-pointer transition-all duration-300 ${
+                  direction === "unidirecional"
+                    ? "bg-primary text-white shadow-lg"
+                    : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+                }`}
+              >
+                Unidirecionais
+              </button>
+            </div>
+
             {/* Tab Navigation */}
             <div className="flex flex-wrap justify-center gap-2 md:gap-3 mb-12">
-              {[
+              {(direction === "bidirecional" ? [
                 { id: "modelo-1", label: "600" },
                 { id: "modelo-2", label: "610" },
                 { id: "modelo-3", label: "610-B125" },
@@ -335,11 +366,21 @@ export default function App() {
                 { id: "modelo-9", label: "830" },
                 { id: "modelo-10", label: "875" },
                 { id: "modelo-11", label: "900" }
-              ].map((tab) => (
+              ] : [
+                { id: "modelo-u1", label: "600U" },
+                { id: "modelo-u2", label: "610U" },
+                { id: "modelo-u3", label: "640U" },
+                { id: "modelo-u4", label: "655U" },
+                { id: "modelo-u5", label: "685U" },
+                { id: "modelo-u6", label: "755U" },
+                { id: "modelo-u7", label: "800U" },
+                { id: "modelo-u8", label: "830U" },
+                { id: "modelo-u9", label: "875U" }
+              ]).map((tab) => (
                 <motion.button
                   key={tab.id}
                   onClick={() => setSelectedTab(tab.id)}
-                  className={`px-4 py-2 rounded-lg font-semibold transition-all duration-300 text-sm md:text-base ${
+                  className={`px-4 py-2 rounded-lg font-semibold cursor-pointer transition-all duration-300 text-sm md:text-base ${
                     selectedTab === tab.id
                       ? "bg-primary text-white shadow-lg"
                       : "bg-gray-100 text-charcoal hover:bg-gray-200"
@@ -378,7 +419,17 @@ export default function App() {
                     selectedTab === "modelo-8" ? "800.webp" :
                     selectedTab === "modelo-9" ? "830.webp" :
                     selectedTab === "modelo-10" ? "875.webp" :
-                    "900.gif"
+                    selectedTab === "modelo-11" ? "900.gif" :
+                    selectedTab === "modelo-u1" ? "600u.gif" :
+                    selectedTab === "modelo-u2" ? "610u.gif" :
+                    selectedTab === "modelo-u3" ? "640u.gif" :
+                    selectedTab === "modelo-u4" ? "655u.gif" :
+                    selectedTab === "modelo-u5" ? "685u.gif" :
+                    selectedTab === "modelo-u6" ? "755u.gif" :
+                    selectedTab === "modelo-u7" ? "800u.gif" :
+                    selectedTab === "modelo-u8" ? "830u.gif" :
+                    selectedTab === "modelo-u9" ? "875u.gif" :
+                    "600.gif"
                   }`}
                   alt="Especificações técnicas"
                   className="w-full max-w-4xl mx-auto h-auto object-contain px-0 md:px-4"
